@@ -1,7 +1,7 @@
 import http from 'http';
 
-import 'express-async-errors';
-import { CustomError, IErrorResponse, winstonLogger } from '@uzochukwueddie/jobber-shared';
+/* import 'express-async-errors'; */ 
+import { CustomError, IErrorResponse, winstonLogger } from '@kevindeveloper95/jobapp-shared';
 import { Application, Request, Response, json, urlencoded, NextFunction } from 'express';
 import { Logger } from 'winston';
 import cookieSession from 'cookie-session';
@@ -13,7 +13,7 @@ import { StatusCodes } from 'http-status-codes';
 import { config } from '@gateway/config';
 import { elasticSearch } from '@gateway/elasticsearch';
 import { appRoutes } from '@gateway/routes';
-import { axiosAuthInstance } from '@gateway/services/api/auth.service';
+/* import { axiosAuthInstance } from '@gateway/services/api/auth.service';
 import { axiosBuyerInstance } from '@gateway/services/api/buyer.service';
 import { axiosSellerInstance } from '@gateway/services/api/seller.service';
 import { axiosGigInstance } from '@gateway/services/api/gig.service';
@@ -23,13 +23,13 @@ import { createAdapter } from '@socket.io/redis-adapter';
 import { SocketIOAppHandler } from '@gateway/sockets/socket';
 import { axiosMessageInstance } from '@gateway/services/api/message.service';
 import { axiosOrderInstance } from '@gateway/services/api/order.service';
-import { axiosReviewInstance } from '@gateway/services/api/review.service';
-import { isAxiosError } from 'axios';
+import { axiosReviewInstance } from '@gateway/services/api/review.service'; */
+/* import { isAxiosError } from 'axios'; */
 
 const SERVER_PORT = 4000;
-const DEFAULT_ERROR_CODE = 500;
+/* const DEFAULT_ERROR_CODE = 500; */
 const log: Logger = winstonLogger(`${config.ELASTIC_SEARCH_URL}`, 'apiGatewayServer', 'debug');
-export let socketIO: Server;
+/* export let socketIO: Server; */
 
 export class GatewayServer {
   private app: Application;
@@ -45,7 +45,7 @@ export class GatewayServer {
     this.routesMiddleware(this.app);       // Rutas principales de la aplicación
     this.startElasticSearch();             // Verificación de conexión a Elasticsearch
     this.errorHandler(this.app);           // Manejo global de errores
-    this.startServer(this.app);            // Inicializa el servidor HTTP y WebSocket
+    this.startServer(this.app);           // Inicializa el servidor HTTP y WebSocket
   }
 
   // Configura middlewares de seguridad y sesión
@@ -54,14 +54,14 @@ export class GatewayServer {
     app.use(
       cookieSession({
         name: 'session',
-        keys: [`${config.SECRET_KEY_ONE}`, `${config.SECRET_KEY_TWO}`],
-        maxAge: 24 * 7 * 3600000, // Una semana
+        keys: [`${config.SECRET_KEY_ONE}`, `${config.SECRET_KEY_TWO}                                                                                                                               `],
+        maxAge: 24 * 7 * 3600000, // Una semana                     
         secure: config.NODE_ENV !== 'development',
         ...(config.NODE_ENV !== 'development' && {
           sameSite: 'none'
         })
       })
-    );
+    );       
     app.use(hpp());       // Previene ataques de parameter pollution
     app.use(helmet());    // Protege cabeceras HTTP
     app.use(cors({       // Configura CORS con el cliente frontend
@@ -71,19 +71,19 @@ export class GatewayServer {
     }));
 
     // Si existe un JWT en sesión, lo inyecta en todos los headers de axios para autenticación
-    app.use((req: Request, _res: Response, next: NextFunction) => {
+     /* app.use((req: Request, _res: Response, next: NextFunction) => {
       if (req.session?.jwt) {
-        axiosAuthInstance.defaults.headers['Authorization'] = `Bearer ${req.session?.jwt}`;
+         axiosAuthInstance.defaults.headers['Authorization'] = `Bearer ${req.session?.jwt}`;
         axiosBuyerInstance.defaults.headers['Authorization'] = `Bearer ${req.session?.jwt}`;
         axiosSellerInstance.defaults.headers['Authorization'] = `Bearer ${req.session?.jwt}`;
         axiosGigInstance.defaults.headers['Authorization'] = `Bearer ${req.session?.jwt}`;
         axiosMessageInstance.defaults.headers['Authorization'] = `Bearer ${req.session?.jwt}`;
         axiosOrderInstance.defaults.headers['Authorization'] = `Bearer ${req.session?.jwt}`;
-        axiosReviewInstance.defaults.headers['Authorization'] = `Bearer ${req.session?.jwt}`;
+        axiosReviewInstance.defaults.headers['Authorization'] = `Bearer ${req.session?.jwt}`; 
       }
       next();
-    });
-  }
+    }); */
+  } 
 
   // Middlewares comunes: compresión, JSON y formularios grandes
   private standardMiddleware(app: Application): void {
@@ -102,10 +102,10 @@ export class GatewayServer {
     elasticSearch.checkConnection();
   }
 
-  // Manejo de errores personalizados y globales
+
   private errorHandler(app: Application): void {
-    // 404 para rutas no existentes
-    app.use('*', (req: Request, res: Response, next: NextFunction) => {
+    
+    app.use(/.*/, (req: Request, res: Response, next: NextFunction) => {
       const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
       log.log('error', `${fullUrl} endpoint does not exist.`, '');
       res.status(StatusCodes.NOT_FOUND).json({ message: 'The endpoint called does not exist.' });
@@ -120,31 +120,31 @@ export class GatewayServer {
       }
 
       // Errores provenientes de Axios al consumir otros servicios
-      if (isAxiosError(error)) {
+      /* if (isAxiosError(error)) {
         log.log('error', `GatewayService Axios Error - ${error?.response?.data?.comingFrom}:`, error);
         res.status(error?.response?.data?.statusCode ?? DEFAULT_ERROR_CODE).json({
           message: error?.response?.data?.message ?? 'Error occurred.'
         });
-      }
+      } */
 
       next();
     });
   }
 
   // Inicia el servidor HTTP y configura Socket.IO
-  private async startServer(app: Application): Promise<void> {
+   private async startServer(app: Application): Promise<void> {
     try {
       const httpServer: http.Server = new http.Server(app);
-      const socketIO: Server = await this.createSocketIO(httpServer); // Crea instancia de Socket.IO
+       /* const socketIO: Server = await this.createSocketIO(httpServer);  */ // Crea instancia de Socket.IO
       this.startHttpServer(httpServer);       // Levanta el servidor HTTP
-      this.socketIOConnections(socketIO);     // Inicia la lógica de conexiones WebSocket
+       /* this.socketIOConnections(socketIO);  */     // Inicia la lógica de conexiones WebSocket
     } catch (error) {
       log.log('error', 'GatewayService startServer() error method:', error);
     }
-  }
+  } 
 
   // Crea instancia de Socket.IO con Redis como adaptador
-  private async createSocketIO(httpServer: http.Server): Promise<Server> {
+  /* private async createSocketIO(httpServer: http.Server): Promise<Server> {
     const io: Server = new Server(httpServer, {
       cors: {
         origin: `${config.CLIENT_URL}`,
@@ -157,7 +157,7 @@ export class GatewayServer {
     io.adapter(createAdapter(pubClient, subClient)); // Configura Redis como adaptador de WebSocket
     socketIO = io;
     return io;
-  }
+  } */
 
   // Inicia el servidor HTTP en el puerto definido
   private async startHttpServer(httpServer: http.Server): Promise<void> {
@@ -172,8 +172,8 @@ export class GatewayServer {
   }
 
   // Activa los listeners de eventos WebSocket
-  private socketIOConnections(io: Server): void {
+  /* private socketIOConnections(io: Server): void {
     const socketIoApp = new SocketIOAppHandler(io);
     socketIoApp.listen();
-  }
+  }  */
 }
