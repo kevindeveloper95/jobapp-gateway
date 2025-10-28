@@ -26,7 +26,7 @@ Object.defineProperties(socketServer, {
 describe('CurrentUser', () => {
   beforeEach(async () => {
     jest.resetAllMocks();
-  });
+   });
 
   afterEach(async () => {
     jest.clearAllMocks();
