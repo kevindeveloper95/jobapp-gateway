@@ -8,13 +8,15 @@ export class Create {
     try {
       const response: AxiosResponse = await gigService.createGig(req.body);
       res.status(StatusCodes.CREATED).json({ message: response.data.message, gig: response.data.gig });
-    } catch (error: any) {
-      if (error.response) {
-        res.status(error.response.status).json(error.response.data);
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response: { status: number; data: any } };
+        res.status(axiosError.response.status).json(axiosError.response.data);
       } else {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
           message: 'An error occurred creating gig',
-          error: error.message 
+          error: errorMessage 
         });
       }
     }

@@ -3,7 +3,6 @@ import { healthRoutes } from '@gateway/routes/health';
 import { authRoutes } from '@gateway/routes/auth';
 import { currentUserRoutes } from '@gateway/routes/current-user';
 import { authMiddleware } from '@gateway/services/auth-middleware';
-
 import { searchRoutes } from '@gateway/routes/search';
 import { buyerRoutes } from '@gateway/routes/buyer';
 import { sellerRoutes } from '@gateway/routes/seller';
