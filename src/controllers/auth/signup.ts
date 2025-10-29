@@ -12,13 +12,13 @@ export class SignUp {
     } catch (error: unknown) {
       // Si el Auth Service devuelve un error, reenviar la respuesta al cliente
       if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response: { status: number; data: any } };
+        const axiosError = error as { response: { status: number; data: unknown } };
         res.status(axiosError.response.status).json(axiosError.response.data);
       } else {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
           message: 'An error occurred during signup',
-          error: errorMessage 
+          error: errorMessage
         });
       }
     }

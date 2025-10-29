@@ -100,4 +100,4 @@ export class SocketIOAppHandler {
       this.io.emit('order notification', order, notification);
     });
   }
-};
+}

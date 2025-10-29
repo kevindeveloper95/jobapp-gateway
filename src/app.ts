@@ -6,7 +6,7 @@ class Application {
   public async initialize(): Promise<void> {
     const app: Express = express();
     const server: GatewayServer = new GatewayServer(app);
-    await server.start();  // IMPORTANTE: Esperar a que el servidor termine de inicializar
+    await server.start(); // IMPORTANTE: Esperar a que el servidor termine de inicializar
     /* redisConnection.redisConnect(); */
   }
 }

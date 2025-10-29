@@ -10,13 +10,13 @@ export class Password {
       res.status(StatusCodes.OK).json({ message: response.data.message });
     } catch (error: unknown) {
       if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response: { status: number; data: any } };
+        const axiosError = error as { response: { status: number; data: unknown } };
         res.status(axiosError.response.status).json(axiosError.response.data);
       } else {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
           message: 'An error occurred during forgot password',
-          error: errorMessage 
+          error: errorMessage
         });
       }
     }
@@ -29,13 +29,13 @@ export class Password {
       res.status(StatusCodes.OK).json({ message: response.data.message });
     } catch (error: unknown) {
       if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response: { status: number; data: any } };
+        const axiosError = error as { response: { status: number; data: unknown } };
         res.status(axiosError.response.status).json(axiosError.response.data);
       } else {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
           message: 'An error occurred during reset password',
-          error: errorMessage 
+          error: errorMessage
         });
       }
     }
@@ -48,13 +48,13 @@ export class Password {
       res.status(StatusCodes.OK).json({ message: response.data.message });
     } catch (error: unknown) {
       if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response: { status: number; data: any } };
+        const axiosError = error as { response: { status: number; data: unknown } };
         res.status(axiosError.response.status).json(axiosError.response.data);
       } else {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
           message: 'An error occurred during change password',
-          error: errorMessage 
+          error: errorMessage
         });
       }
     }

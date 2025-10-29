@@ -1,4 +1,3 @@
-
 import { gigService } from '@gateway/services/api/gig.service';
 import { AxiosResponse } from 'axios';
 import { Request, Response } from 'express';

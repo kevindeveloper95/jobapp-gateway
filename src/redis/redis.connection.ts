@@ -10,7 +10,7 @@ class RedisConnection {
   client: RedisClient;
 
   constructor() {
-    this.client = createClient({ url: `${config.REDIS_HOST}`});
+    this.client = createClient({ url: `${config.REDIS_HOST}` });
   }
 
   async redisConnect(): Promise<void> {
@@ -21,13 +21,13 @@ class RedisConnection {
     } catch (error) {
       log.log('error', 'GatewayService redisConnect() method error:', error);
     }
-  };
+  }
 
   private cacheError(): void {
     this.client.on('error', (error: unknown) => {
       log.error(error);
     });
-  };
+  }
 }
 
 export const redisConnection: RedisConnection = new RedisConnection();
