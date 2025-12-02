@@ -16,6 +16,10 @@ pipeline {
     dockerTool "Docker"
   }
 
+  triggers {
+    githubPush()
+  }
+
   environment {
     DOCKER_CREDENTIALS = credentials("dockerhub")
     NPM_TOKEN = credentials("github-npm-token")
