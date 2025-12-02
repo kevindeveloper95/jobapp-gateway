@@ -24,7 +24,12 @@ export class CurrentUser {
   }
 
   public async removeLoggedInUser(req: Request, res: Response): Promise<void> {
-    const response: string[] = await gatewayCache.removeLoggedInUserFromCache('loggedInUsers', req.params.username);
+    const username = typeof req.params.username === 'string' ? req.params.username : String(req.params.username || '');
+    if (!username) {
+      res.status(StatusCodes.BAD_REQUEST).json({ message: 'Username is required' });
+      return;
+    }
+    const response: string[] = await gatewayCache.removeLoggedInUserFromCache('loggedInUsers', username);
     socketIO.emit('online', response);
     res.status(StatusCodes.OK).json({ message: 'User is offline' });
   }

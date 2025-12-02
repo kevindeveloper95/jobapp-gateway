@@ -29,18 +29,37 @@ export class SocketIOAppHandler {
         this.io.emit('online', response);
       });
 
-      socket.on('loggedInUsers', async (username: string) => {
-        const response: string[] = await this.gatewayCache.saveLoggedInUserToCache('loggedInUsers', username);
+      socket.on('loggedInUsers', async (username: string | any) => {
+        // Asegurar que username sea un string
+        const usernameStr = typeof username === 'string' ? username : (username?.username || username?.id || String(username || ''));
+        if (!usernameStr || usernameStr === '') {
+          log.log('error', 'loggedInUsers: Invalid username provided', username);
+          return;
+        }
+        const response: string[] = await this.gatewayCache.saveLoggedInUserToCache('loggedInUsers', usernameStr);
         this.io.emit('online', response);
       });
 
-      socket.on('removeLoggedInUser', async (username: string) => {
-        const response: string[] = await this.gatewayCache.removeLoggedInUserFromCache('loggedInUsers', username);
+      socket.on('removeLoggedInUser', async (username: string | any) => {
+        // Asegurar que username sea un string
+        const usernameStr = typeof username === 'string' ? username : (username?.username || username?.id || String(username || ''));
+        if (!usernameStr || usernameStr === '') {
+          log.log('error', 'removeLoggedInUser: Invalid username provided', username);
+          return;
+        }
+        const response: string[] = await this.gatewayCache.removeLoggedInUserFromCache('loggedInUsers', usernameStr);
         this.io.emit('online', response);
       });
 
-      socket.on('category', async (category: string, username: string) => {
-        await this.gatewayCache.saveUserSelectedCategory(`selectedCategories:${username}`, category);
+      socket.on('category', async (category: string | any, username: string | any) => {
+        // Asegurar que category y username sean strings
+        const categoryStr = typeof category === 'string' ? category : String(category || '');
+        const usernameStr = typeof username === 'string' ? username : (username?.username || username?.id || String(username || ''));
+        if (!categoryStr || !usernameStr) {
+          log.log('error', 'category: Invalid category or username provided', { category, username });
+          return;
+        }
+        await this.gatewayCache.saveUserSelectedCategory(`selectedCategories:${usernameStr}`, categoryStr);
       });
     });
   }

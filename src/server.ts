@@ -66,13 +66,55 @@ export class GatewayServer {
       })
     );
     app.use(hpp()); // Previene ataques de parameter pollution
-    app.use(helmet()); // Protege cabeceras HTTP
+    
+    // Configurar Helmet para permitir CORS
+    app.use(
+      helmet({
+        crossOriginResourcePolicy: { policy: 'cross-origin' },
+        crossOriginEmbedderPolicy: false
+      })
+    );
+    
     app.use(
       cors({
         // Configura CORS con el cliente frontend
-        origin: config.CLIENT_URL,
+        origin: (origin, callback) => {
+          // Lista de orígenes permitidos
+          const allowedOrigins = [
+            config.CLIENT_URL,
+            'https://jobberapp.kevmendeveloper.com',
+            'http://jobberapp.kevmendeveloper.com',
+            'https://www.jobberapp.kevmendeveloper.com',
+            'http://www.jobberapp.kevmendeveloper.com'
+          ].filter(Boolean); // Elimina valores undefined/null
+          
+          // Log para debugging
+          log.info(`CORS check - Origin: ${origin || 'no origin'}, Allowed: ${allowedOrigins.join(', ')}`);
+          
+          // Permitir requests sin origen (mobile apps, Postman, etc.) en desarrollo
+          if (!origin && config.NODE_ENV === 'development') {
+            log.info('CORS: Allowing request without origin (development mode)');
+            return callback(null, true);
+          }
+          
+          // Verificar si el origen está permitido
+          if (origin && allowedOrigins.includes(origin)) {
+            log.info(`CORS: Allowing origin ${origin}`);
+            callback(null, true);
+          } else if (!origin) {
+            // Permitir requests sin origen (health checks, etc.)
+            log.info('CORS: Allowing request without origin');
+            callback(null, true);
+          } else {
+            log.log('error', `CORS: Blocking origin ${origin}. Allowed origins: ${allowedOrigins.join(', ')}`);
+            callback(new Error(`Not allowed by CORS. Origin: ${origin}`));
+          }
+        },
         credentials: true,
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+        exposedHeaders: ['Content-Range', 'X-Content-Range'],
+        maxAge: 86400 // 24 horas
       })
     );
 
@@ -100,7 +142,14 @@ export class GatewayServer {
 
   // Carga las rutas definidas en el proyecto
   private routesMiddleware(app: Application): void {
-    appRoutes(app);
+    try {
+      log.info('Starting to register routes...');
+      appRoutes(app);
+      log.info('All routes registered successfully');
+    } catch (error) {
+      log.log('error', 'Error registering routes:', error);
+      throw error;
+    }
   }
 
   // Verifica si Elasticsearch está disponible
@@ -109,15 +158,15 @@ export class GatewayServer {
   }
 
   private errorHandler(app: Application): void {
-    app.use(/.*/, (req: Request, res: Response, next: NextFunction) => {
+    // Captura todas las rutas no encontradas (404) - debe estar al final después de todas las rutas
+    app.use((req: Request, res: Response) => {
       const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
       log.log('error', `${fullUrl} endpoint does not exist.`, '');
       res.status(StatusCodes.NOT_FOUND).json({ message: 'The endpoint called does not exist.' });
-      next();
     });
 
     // Errores personalizados definidos por el desarrollador
-    app.use((error: IErrorResponse, _req: Request, res: Response, next: NextFunction) => {
+    app.use((error: IErrorResponse, _req: Request, res: Response, _next: NextFunction) => {
       if (error instanceof CustomError) {
         log.log('error', `GatewayService ${error.comingFrom}:`, error);
         res.status(error.statusCode).json(error.serializeErrors());
@@ -129,9 +178,24 @@ export class GatewayServer {
         res.status(error?.response?.data?.statusCode ?? DEFAULT_ERROR_CODE).json({
           message: error?.response?.data?.message ?? 'Error occurred.'
         });
+        return;
       }
 
-      next();
+      // Errores de CORS
+      if (error.message && error.message.includes('CORS')) {
+        log.log('error', `GatewayService CORS Error:`, error);
+        res.status(StatusCodes.FORBIDDEN).json({
+          message: 'Not allowed by CORS',
+          origin: _req.headers.origin
+        });
+        return;
+      }
+
+      // Error genérico no manejado
+      log.log('error', `GatewayService Unhandled Error:`, error);
+      res.status(DEFAULT_ERROR_CODE).json({
+        message: error?.message ?? 'An error occurred.'
+      });
     });
   }
 
@@ -149,10 +213,19 @@ export class GatewayServer {
 
   // Crea instancia de Socket.IO con Redis como adaptador
   private async createSocketIO(httpServer: http.Server): Promise<Server> {
+    const allowedOrigins: string[] = [
+      config.CLIENT_URL,
+      'https://jobberapp.kevmendeveloper.com',
+      'http://jobberapp.kevmendeveloper.com',
+      'https://www.jobberapp.kevmendeveloper.com',
+      'http://www.jobberapp.kevmendeveloper.com'
+    ].filter((origin): origin is string => Boolean(origin));
+    
     const io: Server = new Server(httpServer, {
       cors: {
-        origin: `${config.CLIENT_URL}`,
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+        origin: allowedOrigins.length > 0 ? allowedOrigins : true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        credentials: true
       }
     });
     const pubClient = createClient({ url: config.REDIS_HOST });

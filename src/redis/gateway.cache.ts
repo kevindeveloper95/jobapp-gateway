@@ -60,8 +60,14 @@ export class GatewayCache {
       if (!this.client.isOpen) {
         await this.client.connect();
       }
-      await this.client.LREM(key, 1, value);
-      log.info(`User ${value} removed`);
+      // Asegurar que value sea un string válido
+      const valueStr = typeof value === 'string' ? value : String(value || '');
+      if (!valueStr || valueStr === '') {
+        log.log('error', 'removeLoggedInUserFromCache: Invalid value provided', { key, value });
+        return await this.client.LRANGE(key, 0, -1);
+      }
+      await this.client.LREM(key, 1, valueStr);
+      log.info(`User ${valueStr} removed`);
       const response: string[] = await this.client.LRANGE(key, 0, -1);
       return response;
     } catch (error) {
