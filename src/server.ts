@@ -66,7 +66,7 @@ export class GatewayServer {
       })
     );
     app.use(hpp()); // Previene ataques de parameter pollution
-    
+
     // Configurar Helmet para permitir CORS
     app.use(
       helmet({
@@ -74,7 +74,7 @@ export class GatewayServer {
         crossOriginEmbedderPolicy: false
       })
     );
-    
+
     app.use(
       cors({
         // Configura CORS con el cliente frontend
@@ -87,16 +87,16 @@ export class GatewayServer {
             'https://www.jobberapp.kevmendeveloper.com',
             'http://www.jobberapp.kevmendeveloper.com'
           ].filter(Boolean); // Elimina valores undefined/null
-          
+
           // Log para debugging
           log.info(`CORS check - Origin: ${origin || 'no origin'}, Allowed: ${allowedOrigins.join(', ')}`);
-          
+
           // Permitir requests sin origen (mobile apps, Postman, etc.) en desarrollo
           if (!origin && config.NODE_ENV === 'development') {
             log.info('CORS: Allowing request without origin (development mode)');
             return callback(null, true);
           }
-          
+
           // Verificar si el origen está permitido
           if (origin && allowedOrigins.includes(origin)) {
             log.info(`CORS: Allowing origin ${origin}`);
@@ -166,7 +166,7 @@ export class GatewayServer {
     });
 
     // Errores personalizados definidos por el desarrollador
-    app.use((error: IErrorResponse, _req: Request, res: Response, _next: NextFunction) => {
+    app.use((error: IErrorResponse, _req: Request, res: Response) => {
       if (error instanceof CustomError) {
         log.log('error', `GatewayService ${error.comingFrom}:`, error);
         res.status(error.statusCode).json(error.serializeErrors());
@@ -183,7 +183,7 @@ export class GatewayServer {
 
       // Errores de CORS
       if (error.message && error.message.includes('CORS')) {
-        log.log('error', `GatewayService CORS Error:`, error);
+        log.log('error', 'GatewayService CORS Error:', error);
         res.status(StatusCodes.FORBIDDEN).json({
           message: 'Not allowed by CORS',
           origin: _req.headers.origin
@@ -192,7 +192,7 @@ export class GatewayServer {
       }
 
       // Error genérico no manejado
-      log.log('error', `GatewayService Unhandled Error:`, error);
+      log.log('error', 'GatewayService Unhandled Error:', error);
       res.status(DEFAULT_ERROR_CODE).json({
         message: error?.message ?? 'An error occurred.'
       });
@@ -220,7 +220,7 @@ export class GatewayServer {
       'https://www.jobberapp.kevmendeveloper.com',
       'http://www.jobberapp.kevmendeveloper.com'
     ].filter((origin): origin is string => Boolean(origin));
-    
+
     const io: Server = new Server(httpServer, {
       cors: {
         origin: allowedOrigins.length > 0 ? allowedOrigins : true,

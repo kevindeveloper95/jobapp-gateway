@@ -29,9 +29,14 @@ export class SocketIOAppHandler {
         this.io.emit('online', response);
       });
 
-      socket.on('loggedInUsers', async (username: string | any) => {
+      socket.on('loggedInUsers', async (username: string | { username?: string; id?: string } | unknown) => {
         // Asegurar que username sea un string
-        const usernameStr = typeof username === 'string' ? username : (username?.username || username?.id || String(username || ''));
+        const usernameStr =
+          typeof username === 'string'
+            ? username
+            : typeof username === 'object' && username !== null && ('username' in username || 'id' in username)
+              ? (username as { username?: string; id?: string }).username || (username as { username?: string; id?: string }).id || ''
+              : String(username || '');
         if (!usernameStr || usernameStr === '') {
           log.log('error', 'loggedInUsers: Invalid username provided', username);
           return;
@@ -40,9 +45,14 @@ export class SocketIOAppHandler {
         this.io.emit('online', response);
       });
 
-      socket.on('removeLoggedInUser', async (username: string | any) => {
+      socket.on('removeLoggedInUser', async (username: string | { username?: string; id?: string } | unknown) => {
         // Asegurar que username sea un string
-        const usernameStr = typeof username === 'string' ? username : (username?.username || username?.id || String(username || ''));
+        const usernameStr =
+          typeof username === 'string'
+            ? username
+            : typeof username === 'object' && username !== null && ('username' in username || 'id' in username)
+              ? (username as { username?: string; id?: string }).username || (username as { username?: string; id?: string }).id || ''
+              : String(username || '');
         if (!usernameStr || usernameStr === '') {
           log.log('error', 'removeLoggedInUser: Invalid username provided', username);
           return;
@@ -51,16 +61,27 @@ export class SocketIOAppHandler {
         this.io.emit('online', response);
       });
 
-      socket.on('category', async (category: string | any, username: string | any) => {
-        // Asegurar que category y username sean strings
-        const categoryStr = typeof category === 'string' ? category : String(category || '');
-        const usernameStr = typeof username === 'string' ? username : (username?.username || username?.id || String(username || ''));
-        if (!categoryStr || !usernameStr) {
-          log.log('error', 'category: Invalid category or username provided', { category, username });
-          return;
+      socket.on(
+        'category',
+        async (
+          category: string | { username?: string; id?: string } | unknown,
+          username: string | { username?: string; id?: string } | unknown
+        ) => {
+          // Asegurar que category y username sean strings
+          const categoryStr = typeof category === 'string' ? category : String(category || '');
+          const usernameStr =
+            typeof username === 'string'
+              ? username
+              : typeof username === 'object' && username !== null && ('username' in username || 'id' in username)
+                ? (username as { username?: string; id?: string }).username || (username as { username?: string; id?: string }).id || ''
+                : String(username || '');
+          if (!categoryStr || !usernameStr) {
+            log.log('error', 'category: Invalid category or username provided', { category, username });
+            return;
+          }
+          await this.gatewayCache.saveUserSelectedCategory(`selectedCategories:${usernameStr}`, categoryStr);
         }
-        await this.gatewayCache.saveUserSelectedCategory(`selectedCategories:${usernameStr}`, categoryStr);
-      });
+      );
     });
   }
 

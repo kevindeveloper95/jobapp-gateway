@@ -22,13 +22,13 @@ export const appRoutes = (app: Application) => {
     console.log('[ROUTES] Registering search routes at', BASE_PATH);
     app.use(BASE_PATH, searchRoutes.routes());
 
-  app.use(BASE_PATH, authMiddleware.verifyUser, currentUserRoutes.routes());
-  app.use(BASE_PATH, authMiddleware.verifyUser, buyerRoutes.routes());
-  app.use(BASE_PATH, authMiddleware.verifyUser, sellerRoutes.routes());
-  app.use(BASE_PATH, authMiddleware.verifyUser, gigRoutes.routes());
-  app.use(BASE_PATH, authMiddleware.verifyUser, messageRoutes.routes());
-  app.use(BASE_PATH, authMiddleware.verifyUser, orderRoutes.routes());
-  app.use(BASE_PATH, authMiddleware.verifyUser, reviewRoutes.routes());
+    app.use(BASE_PATH, authMiddleware.verifyUser, currentUserRoutes.routes());
+    app.use(BASE_PATH, authMiddleware.verifyUser, buyerRoutes.routes());
+    app.use(BASE_PATH, authMiddleware.verifyUser, sellerRoutes.routes());
+    app.use(BASE_PATH, authMiddleware.verifyUser, gigRoutes.routes());
+    app.use(BASE_PATH, authMiddleware.verifyUser, messageRoutes.routes());
+    app.use(BASE_PATH, authMiddleware.verifyUser, orderRoutes.routes());
+    app.use(BASE_PATH, authMiddleware.verifyUser, reviewRoutes.routes());
     console.log('[ROUTES] All routes registered successfully');
   } catch (error) {
     console.error('[ROUTES] Error registering routes:', error);
