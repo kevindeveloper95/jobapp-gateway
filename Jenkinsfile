@@ -126,7 +126,7 @@ pipeline {
                 kubectl delete -n ${namespace} pod ${podName}
                 sleep 10s
               """
-            }
+             }
           }
         }
       }
@@ -191,7 +191,7 @@ pipeline {
         		]
           )
         } else {
-          echo "groovyMethods not available, skipping Slack notification"
+          echo "groovyMethods not available, skipping Slack notification" 
         }
       }
     }
