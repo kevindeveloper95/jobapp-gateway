@@ -118,7 +118,7 @@ pipeline {
 
     stage("Create New Pods") {
       steps {
-        withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: 'minikube ', credentialsId: 'jenkins-k8s-token', namespace: '', serverUrl: 'https://0F0D6D88419677998355D81986853021.gr7.us-east-1.eks.amazonaws.com']]) {
+        withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'jobberapp.us-east-1.eksctl.io', contextName: 'kevin@jobberapp.us-east-1.eksctl.io', credentialsId: 'jenkins-k8s-token', namespace: '', serverUrl: 'https://0F0D6D88419677998355D81986853021.gr7.us-east-1.eks.amazonaws.com']]) {
           script {
             def pods = groovyMethods.findPodsFromName("${namespace}", "${serviceName}")
             for (podName in pods) {
@@ -126,7 +126,7 @@ pipeline {
                 kubectl delete -n ${namespace} pod ${podName}
                 sleep 10s
               """
-              }
+            }
           }
         }
       }
