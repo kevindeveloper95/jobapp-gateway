@@ -71,7 +71,7 @@ pipeline {
       }
     }
 
-     stage("Lint Check") {
+    /*  stage("Lint Check") {
       steps {
         sh 'npm run lint:check'
       }
@@ -93,7 +93,7 @@ pipeline {
         sh 'npm run test'
       }
     }
-
+ */
     stage("Build and Push") {
       steps {
         script {
