@@ -126,7 +126,7 @@ pipeline {
                 kubectl delete -n ${namespace} pod ${podName}
                 sleep 10s
               """
-            }
+             }
           }
         }
       }
